@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-reportlab = "*"
 pyside6 = "*"
+reportlab = "*"
 
 [dev-packages]
 pyinstaller = "*"
