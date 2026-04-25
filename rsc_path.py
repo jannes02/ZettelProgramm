@@ -2,7 +2,7 @@ import sys
 import os
 from pathlib import Path
 
-LAUNCH_MODE = "prod" #"dev" "portable"
+LAUNCH_MODE = "dev" #"dev" "portable" "prod"
 
 def rsc_path(relative_path: str) -> str:
     if LAUNCH_MODE == "prod":
@@ -12,4 +12,5 @@ def rsc_path(relative_path: str) -> str:
     else:
         base_path = os.path.dirname(os.path.abspath(__file__))
 
+    print(os.path.join(base_path, "rsc", relative_path))
     return os.path.join(base_path, "rsc", relative_path)
