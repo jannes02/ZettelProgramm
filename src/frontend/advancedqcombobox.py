@@ -28,4 +28,4 @@ class AdvancedQComboBox(QComboBox):
 
     @QtCore.Slot()
     def wheelEvent(self, e, /):
-        pass
+        self.parent().wheelEvent(e)
