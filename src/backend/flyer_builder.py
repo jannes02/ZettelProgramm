@@ -106,7 +106,7 @@ class FlyerBuilder:
         title_height += self.paragraph_padding
         description_height = description.wrap((self.width - 100) * 7/8, 1000)[1]
         description_height += self.paragraph_padding
-        location_height = location.wrap(self.width * 3/4, 1000)[1]
+        location_height = location.wrap(self.width - 100, 1000)[1]
         location_height += self.paragraph_padding
 
         self.c.setLineWidth(5)
@@ -120,12 +120,13 @@ class FlyerBuilder:
         start_height -= title_height + self.frame_top_margin
         frame_title = Frame(50, start_height, self.width - 100, title_height, showBoundary=self.is_debug, topPadding=0)
 
-        start_height -= description_height + self.frame_top_margin
+        start_height -= description_height
         frame_description = Frame(50, start_height, self.width - 100, description_height, showBoundary=self.is_debug)
 
         start_height -= location_height + self.frame_top_margin + 20
-        frame_location = Frame(self.width - 50 - ((self.width - 100) * 1 / 4), start_height, (self.width - 100) * 3 / 4,
-                               location_height, showBoundary=self.is_debug)
+        frame_location = Frame(50, start_height, self.width - 100, location_height,
+                               leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0,
+                               showBoundary=self.is_debug)
 
 
         start_height -= self.frame_top_margin
@@ -148,6 +149,7 @@ class FlyerBuilder:
 
     def _build_event_multicolumn(self, ed:EventDescription, start_height) -> float:
 
+        self.frame_top_margin = 4
 
         self.color = styles.BLACK if ed.id % 2 == 0 else styles.RED
         self.c.setStrokeColor(self.color)
@@ -173,7 +175,7 @@ class FlyerBuilder:
         title_height += self.paragraph_padding
         description_height = description.wrap((self.width - 100) * 7 / 8, 1000)[1]
         description_height += self.paragraph_padding
-        location_height = location.wrap((self.width - 100) * 1 / 2, 1000)[1]
+        location_height = location.wrap(self.width/2 - 50, 1000)[1]
         location_height += self.paragraph_padding
 
         self.c.setLineWidth(5)
@@ -187,11 +189,14 @@ class FlyerBuilder:
         start_height -= title_height + self.frame_top_margin
         frame_title = Frame(self.left_anchor, start_height, self.width - 100, title_height, showBoundary=self.is_debug, topPadding=0)
 
-        start_height -= description_height + self.frame_top_margin
+        start_height -= description_height - 20
         frame_description = Frame(self.left_anchor, start_height, self.width - 100, description_height, showBoundary=self.is_debug)
-        frame_location = Frame((self.width/2 - 50 - ((self.width - 100) * 1 / 4)) + self.left_anchor, start_height - description_height, (self.width - 100) * 1 / 4,
-                               location_height, showBoundary=self.is_debug)
+
         start_height -= location_height + self.frame_top_margin + 20
+        frame_location = Frame(self.left_anchor, start_height, self.width/2 - 100, location_height,
+                               leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0,
+                               showBoundary=self.is_debug)
+
 
         start_height -= self.frame_top_margin
 
