@@ -51,7 +51,6 @@ class MainWindow(QMainWindow):
         self.doc.load(rsc_path("pdf/HDW-Flyer.pdf"))
         self.pdf_view = QPdfView(self)
         self.pdf_view.setDocument(self.doc)
-        self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitInView)
         self.pdf_view.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred))
         layout = QVBoxLayout(self.pdf_widget)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -59,8 +58,9 @@ class MainWindow(QMainWindow):
 
         self.btn_add_event = self.findChild(QPushButton, "btn_add_event")
         self.btn_compile = self.findChild(QPushButton, "btn_compile")
+        self.btn_print = self.findChild(QPushButton, "btn_print")
         self.findChild(QPushButton, "btn_export").clicked.connect(self.export_pdf)
-        ui.btn_print.clicked.connect(self.print_pdf)
+        self.btn_print.clicked.connect(self.print_pdf)
         self.vbox_events = self.findChild(QVBoxLayout, "vb_events")
 
         self.btn_add_event.clicked.connect(self.add_widget)
@@ -83,12 +83,14 @@ class MainWindow(QMainWindow):
         self.sc_print = QShortcut(QKeySequence("Ctrl+P"), self)
         self.sc_print.activated.connect(self.print_pdf)
 
+
     @QtCore.Slot()
     def add_widget(self):
         widget = EventWidget(self)
         self.event_widgets.append(widget)
         self.vbox_events.addWidget(widget)
         self.findChild(QLabel, "lbl_placeholder").setVisible(False)
+        self.compile()
 
     @QtCore.Slot()
     def remove_widget(self, widget):
@@ -97,12 +99,13 @@ class MainWindow(QMainWindow):
         widget.deleteLater()
         if len(self.event_widgets) == 0:
             self.findChild(QLabel, "lbl_placeholder").setVisible(True)
+        self.compile()
 
     @QtCore.Slot()
     def compile(self):
         events = []
-        for ew in self.event_widgets:
-            events.append(ew.get_data())
+        for i, ew in enumerate(self.event_widgets):
+            events.append(ew.get_data(i=i))
 
         builder = FlyerBuilder(rsc_path("pdf/HDW-Flyer.pdf"))
         builder.build(event_descriptions=events,
@@ -147,3 +150,22 @@ class MainWindow(QMainWindow):
     def refresh_pdf(self):
         self.doc.load(rsc_path("pdf/HDW-Flyer.pdf"))
         self.pdf_view.setDocument(self.doc)
+        self.update_zoom()
+
+    @QtCore.Slot()
+    def update_zoom(self):
+        if self.doc.pageCount() == 0:
+            return
+        page_size = self.doc.pagePointSize(0)
+        viewport = self.pdf_view.viewport()
+        zoom_w = viewport.width() / (page_size.width() * 1.34)
+        zoom_h = viewport.height() / (page_size.height() * 1.34)
+        self.pdf_view.setZoomFactor(min(zoom_w, zoom_h))
+
+    def resizeEvent(self, event, /):
+        super().resizeEvent(event)
+        self.compile()
+
+    def showEvent(self, event, /):
+        super().showEvent(event)
+        self.compile()

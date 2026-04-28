@@ -1,6 +1,7 @@
 from PySide6.QtUiTools import QUiLoader
 
 from src.frontend.advancedqcombobox import AdvancedQComboBox
+from src.frontend.noscrollspinbox import NoScrollSpinBox
 
 
 class CustomUiLoader(QUiLoader):
@@ -8,6 +9,10 @@ class CustomUiLoader(QUiLoader):
     def createWidget(self, className, parent=None, name=""):
         if className == "AdvancedQComboBox":
             widget = AdvancedQComboBox(parent)
+            widget.setObjectName(name)
+            return widget
+        if className == "NoScrollSpinBox":
+            widget = NoScrollSpinBox(parent)
             widget.setObjectName(name)
             return widget
         # Alle anderen Widgets werden standardmäßig erstellt

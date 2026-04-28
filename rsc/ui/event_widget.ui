@@ -34,21 +34,11 @@
       </item>
       <item row="3" column="2">
        <widget class="AdvancedQComboBox" name="cb_location">
+        <property name="focusPolicy">
+         <enum>Qt::FocusPolicy::StrongFocus</enum>
+        </property>
         <property name="editable">
          <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="le_time">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="placeholderText">
-         <string comment="dwads" extracomment="dad"/>
         </property>
        </widget>
       </item>
@@ -235,6 +225,69 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="2">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="NoScrollSpinBox" name="sb_hh">
+          <property name="focusPolicy">
+           <enum>Qt::FocusPolicy::StrongFocus</enum>
+          </property>
+          <property name="maximum">
+           <number>23</number>
+          </property>
+          <property name="value">
+           <number>12</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="NoScrollSpinBox" name="sb_mm">
+          <property name="focusPolicy">
+           <enum>Qt::FocusPolicy::StrongFocus</enum>
+          </property>
+          <property name="maximum">
+           <number>59</number>
+          </property>
+          <property name="singleStep">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_time">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
    </item>
@@ -245,6 +298,11 @@
    <class>AdvancedQComboBox</class>
    <extends>QComboBox</extends>
    <header>src.frontend.advancedqcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>src.frontend.noscrollspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -8,5 +8,6 @@ class EventDescription:
         self.description = description
         self.time = time
         self.location = location
+        self.id = 0
 
 

@@ -12,5 +12,4 @@ def rsc_path(relative_path: str) -> str:
     else:
         base_path = os.path.dirname(os.path.abspath(__file__))
 
-    print(os.path.join(base_path, "rsc", relative_path))
     return os.path.join(base_path, "rsc", relative_path)

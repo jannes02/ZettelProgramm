@@ -2,7 +2,7 @@ from typing import List
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
 from reportlab.lib.pagesizes import A3, A4
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph, Frame
 
@@ -11,14 +11,16 @@ from src.backend.event_description import EventDescription
 # Platypus Styles
 styles = getSampleStyleSheet()
 
-date_style = styles['Heading1'].clone("")
-date_style.alignment = TA_RIGHT
-date_style.fontSize = 48
-date_style.leading = 52
-date_style.textColor = colors.red
+date_style = ParagraphStyle(name='Normal',
+                            fontName="RobotoBold",
+                            fontSize=60,
+                            alignment=TA_RIGHT,
+                            leading= 52,
+                            textColor= colors.red)
+
 heading_style = styles['Heading1'].clone("")
 heading_style.textColor = colors.red
-heading_style.fontSize = 36
+heading_style.fontSize = 44
 heading_style.leading = 40
 
 host_style = styles['Heading2'].clone("")
@@ -46,6 +48,7 @@ class FlyerBuilder:
         self.frame_top_margin = 8 #export
         self.c = canvas.Canvas(self.filename, pagesize=A3)
         self.last_line = 0.0
+        self.color = colors.black
         self.is_debug = False
 
     def build(self,title="Heute im Haus", date="", event_descriptions:List[EventDescription]=None, first_run=True) -> int:
@@ -59,8 +62,6 @@ class FlyerBuilder:
             start_height = self._build_event(ed, start_height)
 
         if first_run:
-
-            print(self.last_line)
 
             if start_height > A4[0] + 10:
                 print("Recompile in A4 Format")
@@ -88,18 +89,27 @@ class FlyerBuilder:
 
         frame_heading = Frame(50, self.height - 150, self.width / 2 - 50, 100, showBoundary=self.is_debug)
         frame_date = Frame(self.width / 2, self.height - 150, self.width / 2 - 50, 100, showBoundary=self.is_debug)
-        self.c.setStrokeColor(colors.black)
-        self.c.setLineWidth(5)
-        self.c.line(50, self.height - 160, self.width - 50, self.height - 160)
+
 
         self.c.setStrokeColor(colors.black)
         self.c.setLineWidth(1)
         frame_heading.addFromList([heading], self.c)
         frame_date.addFromList([date], self.c)
 
+
         return self.height - 160
 
     def _build_event(self, ed:EventDescription, start_height) -> float:
+
+        self.color = colors.black if ed.id % 2 == 0 else colors.red
+        self.c.setStrokeColor(self.color)
+
+        print(f"{ed.title} ist: {self.color}")
+        host_style.textColor = self.color
+        time_style.textColor = self.color
+        title_style.textColor = self.color
+        description_style.textColor = self.color
+
         host = Paragraph(ed.host_name, host_style)
         event_time = Paragraph(ed.time, time_style)
         title = Paragraph(ed.title, title_style)
@@ -116,6 +126,9 @@ class FlyerBuilder:
         location_height = location.wrap((self.width - 100) * 1 / 4, 1000)[1]
         location_height += self.paragraph_padding
 
+        self.c.setLineWidth(3)
+        self.c.line(50, start_height, self.width - 50, start_height)
+
         start_height -= host_height + self.frame_top_margin
         frame_host = Frame(50, start_height, (self.width - 100) * 3 / 4, host_height, showBoundary=self.is_debug)
         frame_time = Frame(self.width - 50 - ((self.width - 100) * 1 / 4), start_height, (self.width - 100) * 1 / 4, host_height,
@@ -130,18 +143,18 @@ class FlyerBuilder:
                                location_height, showBoundary=self.is_debug)
 
         start_height -= self.frame_top_margin
-        self.c.setStrokeColor(colors.red)
-        self.c.setLineWidth(5)
-        self.c.line(50, start_height, self.width - 50, start_height)
+
 
         self.last_line = start_height
 
-        self.c.setStrokeColor(colors.black)
+
         self.c.setLineWidth(1)
         frame_host.addFromList([host], self.c)
         frame_time.addFromList([event_time], self.c)
         frame_title.addFromList([title], self.c)
         frame_description.addFromList([description], self.c)
         frame_location.addFromList([location], self.c)
+
+
 
         return start_height

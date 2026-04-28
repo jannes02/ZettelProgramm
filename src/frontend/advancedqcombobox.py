@@ -25,3 +25,7 @@ class AdvancedQComboBox(QComboBox):
         if output != self.buffered_items:
             with open(os.path.join(self.dirname, rsc_path("persistence/rooms.json")), 'w') as f:
                 f.write(output)
+
+    @QtCore.Slot()
+    def wheelEvent(self, e, /):
+        pass
