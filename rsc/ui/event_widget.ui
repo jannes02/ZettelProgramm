@@ -27,10 +27,30 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="2">
-       <widget class="QLineEdit" name="le_title"/>
+       <widget class="QLineEdit" name="le_title">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="maxLength">
+         <number>128</number>
+        </property>
+        <property name="placeholderText">
+         <string>Titel</string>
+        </property>
+       </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QLineEdit" name="le_host"/>
+       <widget class="QLineEdit" name="le_host">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="maxLength">
+         <number>256</number>
+        </property>
+        <property name="placeholderText">
+         <string>Veranstalter*innen</string>
+        </property>
+       </widget>
       </item>
       <item row="3" column="2">
        <widget class="AdvancedQComboBox" name="cb_location">
@@ -49,6 +69,9 @@
           <width>0</width>
           <height>200</height>
          </size>
+        </property>
+        <property name="placeholderText">
+         <string>Beschreibung der Veranstltung</string>
         </property>
        </widget>
       </item>

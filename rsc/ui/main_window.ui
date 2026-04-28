@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1536</width>
-    <height>840</height>
+    <width>1600</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -39,8 +39,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>750</width>
-           <height>720</height>
+           <width>832</width>
+           <height>780</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
@@ -82,8 +82,8 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>20</pointsize>
-                  <bold>true</bold>
+                  <pointsize>18</pointsize>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="autoFillBackground">
@@ -233,7 +233,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1536</width>
+     <width>1600</width>
      <height>33</height>
     </rect>
    </property>

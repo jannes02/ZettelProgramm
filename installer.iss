@@ -7,10 +7,10 @@
 
 
 [Setup]
-AppName=HdW Flyer Creator
+AppName=Zettelprogramm
 AppVersion={#MyAppVersion}
-OutputBaseFilename=FlyerCreator_{#MyAppVersion}_Setup
-DefaultGroupName=Haus der Wissenschaft
+OutputBaseFilename=Zettelprogramm_{#MyAppVersion}_Setup
+DefaultGroupName=User
 SetupIconFile=rsc\icons\app.ico
 Compression=lzma
 SolidCompression=yes
@@ -24,15 +24,15 @@ Source: "dist\launch\*"; \
   Excludes: "rsc\*"; \
   Flags: recursesubdirs createallsubdirs
 Source: "dist\launch/_internal\rsc\*"; \
-  DestDir: "{userappdata}\HausDerWissenschaft\rsc"; \
+  DestDir: "{userappdata}\Zettelprogramm\rsc"; \
   Flags: recursesubdirs createallsubdirs
 
 [Dirs]
-Name: "{userappdata}\HausDerWissenschaft"; Flags: uninsneveruninstall
+Name: "{userappdata}\Zettelprogramm"; Flags: uninsneveruninstall
 
 [Icons]
-Name: "{group}\Flyer Creator"; Filename: "{app}\launch.exe"
-Name: "{code:GetDesktopDir}\Flyer Creator"; Filename: "{app}\launch.exe"; Tasks: desktopicon
+Name: "{group}\Zettelprogramm"; Filename: "{app}\launch.exe"
+Name: "{code:GetDesktopDir}\Zettelprogramm"; Filename: "{app}\launch.exe"; Tasks: desktopicon
 
 [Tasks]
 Name: desktopicon; Description: "Desktop-Verknüpfung erstellen"; Flags: unchecked
@@ -42,9 +42,9 @@ Name: desktopicon; Description: "Desktop-Verknüpfung erstellen"; Flags: uncheck
 function GetInstallDir(Param: string): string;
 begin
   if IsAdminInstallMode then
-    Result := ExpandConstant('{pf}\HausDerWissenschaft')
+    Result := ExpandConstant('{pf}\Zettelprogramm')
   else
-    Result := ExpandConstant('{localappdata}\Programs\HausDerWissenschaft');
+    Result := ExpandConstant('{localappdata}\Programs\Zettelprogramm');
 end;
 
 function GetDesktopDir(Param: string): string;

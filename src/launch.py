@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(rsc_path("icons/app.ico")))
-    app.setApplicationName("Haus Der Wissenschaft - Flyer Creator")
+    app.setApplicationName("Zettelprogramm")
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
