@@ -6,7 +6,7 @@ LAUNCH_MODE = "prod" #"dev" "portable" "prod"
 
 def rsc_path(relative_path: str) -> str:
     if LAUNCH_MODE == "prod":
-        base_path = Path(os.environ["APPDATA"]) / "HausDerWissenschaft"
+        base_path = Path(os.environ["APPDATA"]) / "Zettelprogramm"
     elif getattr(sys, "frozen", False):
         base_path = sys._MEIPASS   # PyInstaller Temp-Dir
     else:
