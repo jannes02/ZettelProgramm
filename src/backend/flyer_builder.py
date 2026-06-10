@@ -94,7 +94,7 @@ class FlyerBuilder:
         styles.DESCRIPTION_STYLE.textColor = self.color
 
         host = Paragraph(ed.host_name, styles.HOST_STYLE)
-        event_time = Paragraph(ed.time, styles.TIME_STYLE)
+        event_time = Paragraph(ed.time + " Uhr", styles.TIME_STYLE)
         title = Paragraph(ed.title, styles.TITLE_STYLE)
         description = Paragraph(ed.description, styles.DESCRIPTION_STYLE)
         location = Paragraph(ed.location, styles.TIME_STYLE)

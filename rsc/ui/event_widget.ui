@@ -63,7 +63,7 @@
        </widget>
       </item>
       <item row="4" column="2">
-       <widget class="QTextEdit" name="te_description">
+       <widget class="CustomTextEdit" name="te_description">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -326,6 +326,11 @@
    <class>NoScrollSpinBox</class>
    <extends>QSpinBox</extends>
    <header>src.frontend.noscrollspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CustomTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>src.frontend.customtextedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

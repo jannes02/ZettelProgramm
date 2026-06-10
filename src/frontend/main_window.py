@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from PySide6 import QtCore
 from PySide6.QtGui import QShortcut, QKeySequence
@@ -58,9 +58,9 @@ class MainWindow(QMainWindow):
 
         self.btn_add_event = self.findChild(QPushButton, "btn_add_event")
         self.btn_compile = self.findChild(QPushButton, "btn_compile")
-        self.btn_print = self.findChild(QPushButton, "btn_print")
+        #self.btn_print = self.findChild(QPushButton, "btn_print")
         self.findChild(QPushButton, "btn_export").clicked.connect(self.export_pdf)
-        self.btn_print.clicked.connect(self.print_pdf)
+        #self.btn_print.clicked.connect(self.print_pdf)
         self.vbox_events = self.findChild(QVBoxLayout, "vb_events")
 
         self.btn_add_event.clicked.connect(self.add_widget)
@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
         self.le_title = self.findChild(QLineEdit, "le_title")
         self.le_title.setText("Heute im Haus")
         self.le_date = self.findChild(QLineEdit, "le_date")
-        self.le_date.setText(datetime.today().strftime("%d.%m.%Y"))
+        self.le_date.setText((datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y"))
 
         self.sc_export = QShortcut(QKeySequence("Ctrl+E"), self)
         self.sc_export.activated.connect(self.export_pdf)

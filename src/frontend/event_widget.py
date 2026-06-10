@@ -1,9 +1,12 @@
+from PySide6 import QtCore
 from PySide6.QtCore import QFile
+from PySide6.QtGui import QTextDocument
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QTextEdit, QSpinBox, QLabel
 
 from rsc_path import rsc_path
 from src.backend.event_description import EventDescription
 from src.frontend.advancedqcombobox import AdvancedQComboBox
+from src.frontend.customtextedit import CustomTextEdit
 from src.frontend.custom_ui_loader import CustomUiLoader
 from src.frontend.noscrollspinbox import NoScrollSpinBox
 
@@ -26,10 +29,12 @@ class EventWidget(QWidget):
         ui.btn_remove.clicked.connect(lambda: parent.remove_widget(self))
 
         self.le_title = self.findChild(QLineEdit, "le_title")
+        self.le_title.setMaxLength(74)
         self.le_host = self.findChild(QLineEdit, "le_host")
         self.le_time = self.findChild(QLineEdit, "le_time")
         self.cb_location = self.findChild(AdvancedQComboBox, "cb_location")
         self.te_description = self.findChild(QTextEdit, "te_description")
+
         self.sb_hh = self.findChild(NoScrollSpinBox, "sb_hh")
         self.sb_mm = self.findChild(NoScrollSpinBox, "sb_mm")
 
@@ -38,8 +43,11 @@ class EventWidget(QWidget):
         #self.le_time.editingFinished.connect(parent.compile)
         self.cb_location.currentTextChanged.connect(parent.compile)
         self.te_description.textChanged.connect(parent.compile)
+        self.te_description.textChanged.connect(self.check_text_length)
         self.sb_hh.textChanged.connect(parent.compile)
         self.sb_mm.textChanged.connect(parent.compile)
+
+        self.last_doc = self.te_description.document()
 
 
 
@@ -63,3 +71,8 @@ class EventWidget(QWidget):
         ed.description = plain
         return ed
 
+    @QtCore.Slot()
+    def check_text_length(self):
+        te = self.findChild(QTextEdit, "te_description")
+        if len(te.toPlainText()) > 400: # and self.len_before == 10:
+            te.setText(te.toPlainText()[:-1])
