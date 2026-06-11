@@ -74,5 +74,7 @@ class EventWidget(QWidget):
     @QtCore.Slot()
     def check_text_length(self):
         te = self.findChild(QTextEdit, "te_description")
+        if te.toPlainText().count("\n") >= 10:
+            te.setText(te.toPlainText()[:-1])
         if len(te.toPlainText()) > 400: # and self.len_before == 10:
             te.setText(te.toPlainText()[:-1])

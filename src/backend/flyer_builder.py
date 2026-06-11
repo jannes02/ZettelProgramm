@@ -163,7 +163,7 @@ class FlyerBuilder:
         styles.DESCRIPTION_STYLE_HALF.textColor = self.color
 
         host = Paragraph(ed.host_name, styles.HOST_STYLE_HALF)
-        event_time = Paragraph(ed.time, styles.TIME_STYLE_HALF)
+        event_time = Paragraph(ed.time + " Uhr", styles.TIME_STYLE)
         title = Paragraph(ed.title, styles.TITLE_STYLE_HALF)
         description = Paragraph(ed.description, styles.DESCRIPTION_STYLE_HALF)
         location = Paragraph(ed.location, styles.TIME_STYLE_HALF)
@@ -171,9 +171,9 @@ class FlyerBuilder:
         # calculate height for each section
         host_height = max(host.wrap((self.width - 100) * 3 / 4, 1000)[1], event_time.wrap((self.width - 100) * 1 / 4, 1000)[1])
         host_height += self.paragraph_padding
-        title_height = title.wrap(self.width - 100, 1000)[1]
+        title_height = title.wrap(self.width/2 - 50, 1000)[1]
         title_height += self.paragraph_padding
-        description_height = description.wrap((self.width - 100) * 7 / 8, 1000)[1]
+        description_height = description.wrap((self.width / 2 - 50) * 7 / 8, 1000)[1]
         description_height += self.paragraph_padding
         location_height = location.wrap(self.width/2 - 50, 1000)[1]
         location_height += self.paragraph_padding
@@ -187,13 +187,13 @@ class FlyerBuilder:
                            showBoundary=self.is_debug)
 
         start_height -= title_height + self.frame_top_margin
-        frame_title = Frame(self.left_anchor, start_height, self.width - 100, title_height, showBoundary=self.is_debug, topPadding=0)
+        frame_title = Frame(self.left_anchor, start_height, self.width/2 - 50, title_height, showBoundary=self.is_debug, topPadding=0)
 
         start_height -= description_height - 20
-        frame_description = Frame(self.left_anchor, start_height, self.width - 100, description_height, showBoundary=self.is_debug)
+        frame_description = Frame(self.left_anchor, start_height, self.width/2 - 50, description_height, showBoundary=self.is_debug)
 
         start_height -= location_height + self.frame_top_margin + 20
-        frame_location = Frame(self.left_anchor, start_height, self.width/2 - 100, location_height,
+        frame_location = Frame(self.left_anchor, start_height, self.width/2 - 50, location_height,
                                leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0,
                                showBoundary=self.is_debug)
 
