@@ -2,7 +2,7 @@ import sys
 import os
 from pathlib import Path
 
-LAUNCH_MODE = "dev" #"dev" "portable" "prod"
+LAUNCH_MODE = "prod" #"dev" "portable" "prod"
 
 def rsc_path(relative_path: str) -> str:
     if LAUNCH_MODE == "prod":
