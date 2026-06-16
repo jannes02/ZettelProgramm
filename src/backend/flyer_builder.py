@@ -10,15 +10,19 @@ import src.backend.styles as styles
 
 class FlyerBuilder:
 
-    # Maximale Anzahl Events, die garantiert (4 Spalten / 2 Seiten) platziert wird.
+    # Maximum number of events that is guaranteed to fit (4 columns / 2 pages).
     MAX_EVENTS = 12
+
+    # Upper bound for the extra gap inserted between events in a column. Keeps
+    # sparse columns compact (top-aligned) rather than spread over the full page.
+    MAX_EVENT_GAP = 40
 
     def __init__(self, output_file_name):
         self.filename = output_file_name
         self.width, self.height = A3
         self.paragraph_padding = 16
         self.frame_top_margin = 8
-        self.bottom_margin = 50  # unterer Sicherheitsrand
+        self.bottom_margin = 50  # bottom safety margin
         self.c = canvas.Canvas(self.filename, pagesize=A3)
         self.last_line = 0.0
         self.color = styles.BLACK
@@ -29,7 +33,7 @@ class FlyerBuilder:
         self.date = ""
 
     # ------------------------------------------------------------------ #
-    #  Hauptablauf
+    #  Main flow
     # ------------------------------------------------------------------ #
     def build(self, title="Heute im Haus", date="",
               event_descriptions: List[EventDescription] = None, first_run=True) -> int:
@@ -58,40 +62,45 @@ class FlyerBuilder:
         return 0
 
     def _decide_layout(self, events) -> str:
-        """Liefert 'a4', 'portrait' oder 'landscape'.
+        """Returns 'a4', 'portrait' or 'landscape'.
 
-        1 Event   -> A4 (quer, wie bisher)
-        2 Events  -> A3 Hochformat, einspaltig
-        3-4 Events-> A3 Hochformat einspaltig; nur bei drohendem Seitenueberlauf
-                     -> A3-Quer Zweispalten
-        5+ Events -> immer A3-Quer Zweispalten
+        1 event    -> A4 (landscape, as before)
+        2-3 events -> A3 portrait, single column (3 always fits on one page)
+        4 events   -> A3 portrait single column; only switches to A3 landscape
+                      two-column layout if the content would overflow the page
+        5+ events  -> always A3 landscape, two-column layout
         """
         if self.count == 1:
             return "a4"
-        if self.count == 2:
+        if self.count <= 3:
             return "portrait"
         if self.count >= 5:
             return "landscape"
 
-        # 3-4 Events: messen, ob es einspaltig (Hochformat) passt
+        # 4 events: measure whether the single-column (portrait) layout fits
         self._apply_dims("portrait")
         usable = (self.height - 160) - self.bottom_margin
         total = sum(self._measure_single(ed) for ed in events)
         return "portrait" if total <= usable else "landscape"
 
     # ------------------------------------------------------------------ #
-    #  Canvas / Dimensionen
+    #  Canvas / dimensions
     # ------------------------------------------------------------------ #
     def _apply_dims(self, layout: str):
         if layout == "a4":
-            self.height, self.width = A4[0], A4[1]          # A4 quer
+            self.height, self.width = A4[0], A4[1]          # A4 landscape
             self.frame_top_margin = 16
         elif layout == "portrait":
-            self.height, self.width = A3[1], A3[0]          # A3 hoch
+            self.height, self.width = A3[1], A3[0]          # A3 portrait
             self.frame_top_margin = 16 / (self.count or 1)
         else:  # landscape
-            self.height, self.width = A3                    # A3 quer
-            self.frame_top_margin = 4
+            self.height, self.width = A3                    # A3 landscape
+            # Multi-column layout is packed a bit tighter (closer to the Word
+            # template): a smaller inter-element margin compresses each event
+            # block and lets a column hold slightly more before it breaks.
+            # paragraph_padding stays >=12 because ReportLab frames reserve
+            # ~12 pt of internal padding - smaller values silently drop text.
+            self.frame_top_margin = 2
 
     def _setup_canvas(self, layout: str):
         self._apply_dims(layout)
@@ -122,7 +131,7 @@ class FlyerBuilder:
         return self.header_height
 
     # ------------------------------------------------------------------ #
-    #  Einspaltiger Renderer (1 / 2 / 3-4-Events)
+    #  Single-column renderer (1 / 2 / 3-4 events)
     # ------------------------------------------------------------------ #
     def _render_singlecolumn(self, events):
         self._build_header(self.title, self.date)
@@ -130,8 +139,8 @@ class FlyerBuilder:
         heights = [self._measure_single(ed) for ed in events]
         usable = self.header_height - self.bottom_margin
         n = len(events)
-        # Restplatz gleichmaessig als Abstaende verteilen (vertikaler Blocksatz).
-        # Bei einem einzelnen Event Original-Verhalten beibehalten (oben buendig).
+        # Distribute the remaining space evenly as gaps (vertical justification).
+        # For a single event keep the original behaviour (top aligned).
         gap = max(0.0, usable - sum(heights)) / (n + 1) if n > 1 else 0.0
 
         top = self.header_height
@@ -140,17 +149,26 @@ class FlyerBuilder:
             top = self._draw_event_single(ed, top)
 
     # ------------------------------------------------------------------ #
-    #  Mehrspaltiger / mehrseitiger Renderer (3-4 Ueberlauf, 5+)
+    #  Multi-column / multi-page renderer (4-event overflow, 5+)
     # ------------------------------------------------------------------ #
     def _render_multicolumn(self, events):
         self.header_height = self.height - 160
-        # Harte Obergrenze: bis kurz vor den Seitenrand (Inhalt wird sonst nicht
-        # abgeschnitten, nur der Sicherheitsrand kann angeknabbert werden).
+        # Hard cap: down to just before the page edge (content is never cut,
+        # only the safety margin may be eaten into).
         fit_cap = self.header_height - 10
 
         heights = [self._measure_multi(ed) for ed in events]
-        ncols = self._needed_columns(heights, fit_cap)
-        groups = self._balanced_partition(heights, ncols)
+        # Fill columns front to back: pack each column up to the cap before
+        # starting the next one. This keeps the first columns (and the first
+        # page) as full as possible and leaves any short column at the end
+        # (e.g. 3-2, 2-2-1). If the first events are large, the next column
+        # simply starts earlier. It also uses the minimum number of columns,
+        # so a second page is only started once the first one is really full.
+        groups = self._greedy_partition(heights, fit_cap)
+        # More than 4 columns means the content exceeds two A3 pages; fall back
+        # to a balanced split across the 4 available columns (best effort).
+        if len(groups) > 4:
+            groups = self._balanced_partition(heights, 4)
 
         for ci, (start, end) in enumerate(groups):
             page = ci // 2
@@ -167,19 +185,26 @@ class FlyerBuilder:
             group_heights = heights[start:end]
             usable = self.header_height - self.bottom_margin
             m = len(group_events)
-            gap = max(0.0, usable - sum(group_heights)) / (m + 1) if m > 0 else 0.0
+            # Distribute the remaining space AFTER each event, not before. That
+            # way the first separator line of every column starts exactly at
+            # header_height -> the top lines of all columns share the same height
+            # (table look). The gap is capped so sparse columns pack towards the
+            # top (compressed, like the Word template) instead of stretching the
+            # few events across the whole page height.
+            gap = max(0.0, usable - sum(group_heights)) / m if m > 0 else 0.0
+            gap = min(gap, self.MAX_EVENT_GAP)
 
             top = self.header_height
             for ed in group_events:
-                top -= gap
                 top = self._draw_event_multi(ed, left_anchor, top)
+                top -= gap
 
     # ------------------------------------------------------------------ #
-    #  Spalten-/Seitenaufteilung
+    #  Column / page partitioning
     # ------------------------------------------------------------------ #
     @staticmethod
     def _greedy_columns(heights, cap) -> int:
-        """Minimale Spaltenzahl bei sequentieller Befuellung (First-Fit)."""
+        """Minimum number of columns when filling sequentially (first-fit)."""
         cols, cur = 1, 0.0
         for h in heights:
             if cur > 0 and cur + h > cap:
@@ -190,8 +215,27 @@ class FlyerBuilder:
         return cols
 
     @staticmethod
+    def _greedy_partition(heights, cap):
+        """Pack events into contiguous columns front to back: keep adding to the
+        current column until the next event would exceed the cap, then start a
+        new column. Earlier columns are filled first and any leftover (short)
+        column ends up last. Uses the minimum number of contiguous columns."""
+        groups = []
+        start = 0
+        cur = 0.0
+        for i, h in enumerate(heights):
+            if i > start and cur + h > cap:
+                groups.append((start, i))
+                start = i
+                cur = h
+            else:
+                cur += h
+        groups.append((start, len(heights)))
+        return groups
+
+    @staticmethod
     def _minimax_value(heights, k) -> float:
-        """Kleinstmoegliche groesste Spaltensumme bei k Spalten (DP-Minimax)."""
+        """Smallest possible largest column sum for k columns (DP minimax)."""
         n = len(heights)
         if n == 0:
             return 0.0
@@ -211,10 +255,10 @@ class FlyerBuilder:
         return dp[n][k]
 
     def _needed_columns(self, heights, cap) -> int:
-        """Wenigste Spalten (max. 4), bei denen jede Spalte noch auf die Seite
-        passt (ausbalanciert per Minimax). So bleibt das Layout kompakt – es
-        werden nur so viele Spalten/Seiten genutzt wie noetig. Passt es in keine
-        <=4 Spalten (echte Ueberkapazitaet), werden 4 Spalten verwendet."""
+        """Fewest columns (max. 4) where every column still fits on the page
+        (balanced via minimax). This keeps the layout compact - only as many
+        columns/pages as necessary are used. If it does not fit in <=4 columns
+        (genuine over-capacity), 4 columns are used."""
         n = len(heights)
         if n == 0:
             return 1
@@ -225,13 +269,16 @@ class FlyerBuilder:
         return max_cols
 
     @staticmethod
-    def _balanced_partition(heights, k):
-        """Teilt die geordnete Liste in <=k zusammenhaengende Gruppen so, dass
-        die groesste Spaltensumme minimal wird (DP-Minimax). Erhaelt die Reihenfolge."""
+    def _balanced_partition(heights, k, min_size=1):
+        """Split the ordered list into <=k contiguous groups so that the largest
+        column sum is minimised (DP minimax). Order is preserved. With min_size
+        every group is forced to contain at least min_size items; if that is
+        infeasible (n < k * min_size) it falls back to min_size = 1."""
         n = len(heights)
         if n == 0:
             return []
         k = max(1, min(k, n))
+        min_size = max(1, min_size)
 
         pre = [0.0]
         for h in heights:
@@ -243,11 +290,21 @@ class FlyerBuilder:
         dp[0][0] = 0.0
         for i in range(1, n + 1):
             for j in range(1, min(i, k) + 1):
-                for p in range(j - 1, i):
+                # group j is [p, i]; it must hold >= min_size items and leave
+                # room for the earlier j-1 groups (each also >= min_size).
+                lo = (j - 1) * min_size
+                hi = i - min_size
+                for p in range(max(j - 1, lo), hi + 1):
+                    if dp[p][j - 1] == inf:
+                        continue
                     val = max(dp[p][j - 1], pre[i] - pre[p])
                     if val < dp[i][j]:
                         dp[i][j] = val
                         cut[i][j] = p
+
+        if dp[n][k] == inf:
+            # min_size made the split infeasible -> retry without the constraint
+            return FlyerBuilder._balanced_partition(heights, k, 1)
 
         groups, i, j = [], n, k
         while j > 0:
@@ -258,7 +315,7 @@ class FlyerBuilder:
         return groups
 
     # ------------------------------------------------------------------ #
-    #  Hoehenberechnung (Mess- und Zeichenpfad teilen diese Formeln)
+    #  Height calculation (measuring and drawing share these formulas)
     # ------------------------------------------------------------------ #
     def _heights_single(self, host, event_time, title, description, location):
         pad = self.paragraph_padding
@@ -297,7 +354,7 @@ class FlyerBuilder:
         return host_h + title_h + desc_h + loc_h + 4 * self.frame_top_margin
 
     # ------------------------------------------------------------------ #
-    #  Zeichnen eines Events - einspaltig
+    #  Drawing a single event - single column
     # ------------------------------------------------------------------ #
     def _draw_event_single(self, ed: EventDescription, start_height) -> float:
         self.color = styles.BLACK if ed.id % 2 == 0 else styles.RED
@@ -351,7 +408,7 @@ class FlyerBuilder:
         return start_height
 
     # ------------------------------------------------------------------ #
-    #  Zeichnen eines Events - Spalte (mehrspaltig)
+    #  Drawing a single event - column (multi-column)
     # ------------------------------------------------------------------ #
     def _draw_event_multi(self, ed: EventDescription, left_anchor, start_height) -> float:
         self.color = styles.BLACK if ed.id % 2 == 0 else styles.RED

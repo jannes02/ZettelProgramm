@@ -7,7 +7,7 @@ from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QSizePolicy, QLabel, \
-    QLineEdit
+    QLineEdit, QToolTip
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
 
@@ -51,6 +51,8 @@ class MainWindow(QMainWindow):
         self.doc.load(rsc_path("pdf/HDW-Flyer.pdf"))
         self.pdf_view = QPdfView(self)
         self.pdf_view.setDocument(self.doc)
+        # MultiPage so that a possibly generated 2nd page is visible in the viewer.
+        self.pdf_view.setPageMode(QPdfView.PageMode.MultiPage)
         self.pdf_view.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred))
         layout = QVBoxLayout(self.pdf_widget)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -86,6 +88,15 @@ class MainWindow(QMainWindow):
 
     @QtCore.Slot()
     def add_widget(self):
+        # Cap at FlyerBuilder.MAX_EVENTS: a 13th event would no longer fit on
+        # two A3 pages, so it is refused with a hint instead of being added.
+        if len(self.event_widgets) >= FlyerBuilder.MAX_EVENTS:
+            QToolTip.showText(
+                self.btn_add_event.mapToGlobal(self.btn_add_event.rect().bottomLeft()),
+                f"Es können maximal {FlyerBuilder.MAX_EVENTS} Veranstaltungen hinzugefügt werden.",
+                self.btn_add_event)
+            return
+
         widget = EventWidget(self)
         self.event_widgets.append(widget)
         self.vbox_events.addWidget(widget)

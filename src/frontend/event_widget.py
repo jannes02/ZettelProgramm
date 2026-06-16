@@ -21,7 +21,7 @@ class EventWidget(QWidget):
         ui = loader.load(file, self)
         file.close()
 
-        # Layout korrekt übernehmen
+        # Take over the layout correctly
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(ui)
@@ -31,9 +31,9 @@ class EventWidget(QWidget):
         self.le_title = self.findChild(QLineEdit, "le_title")
         self.le_title.setMaxLength(74)
         self.le_host = self.findChild(QLineEdit, "le_host")
-        # Veranstalter*innen: max. 3 Zeilen. le_host ist einzeilig, daher per
-        # Zeichenlimit begrenzt. 110 garantiert <=3 umgebrochene Zeilen auch in
-        # der schmalsten (Zweispalten-Quer) Host-Spalte (~409 pt, Roboto 20 pt).
+        # Hosts: max. 3 lines. le_host is single-line, so it is limited via a
+        # character cap. 110 guarantees <=3 wrapped lines even in the narrowest
+        # (two-column landscape) host column (~409 pt, Roboto 20 pt).
         self.le_host.setMaxLength(110)
         self.le_time = self.findChild(QLineEdit, "le_time")
         self.cb_location = self.findChild(AdvancedQComboBox, "cb_location")
